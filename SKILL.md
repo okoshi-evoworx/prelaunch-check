@@ -1,14 +1,14 @@
 ---
 name: prelaunch-check
 description: >-
-  Web制作プロジェクトの公開前チェック。OGP設定・Google Analytics/Google Tag ManagerのID・favicon/apple-touch-icon・sitemap.xml/robots.txt・APIキーなど機密情報の露出・(WordPressの場合)セキュリティプラグインや.htaccess・バックアップ取得状況がダミー値のまま/未設定/未確認のまま残っていないかを、プロジェクトの実際のファイル構成を調べて確認する。「公開前チェック」「リリース前チェック」「本番公開できるか確認して」「サイト公開の準備」「go-liveチェック」「OGP確認」「GTM設定確認」「ダミーIDのままになっていないか」「WordPressのセキュリティ確認」「APIキーが漏れていないか」「バックアップ取ったか確認して」のような依頼で必ず使う。フレームワークを問わず(Astro/11ty/Next.js/Hugo/Jekyll/WordPress/プレーンなHTML等)使えるので、スタックが分からない/初めて見るプロジェクトでも積極的に使うこと。
+  Web制作プロジェクトの公開前チェック。OGP設定・Google Analytics/Google Tag ManagerのID・favicon/apple-touch-icon・sitemap.xml/robots.txt・APIキーなど機密情報の露出・お問い合わせフォーム(Contact Form 7/formrun/HyperForm等)とreCAPTCHA/Cloudflare Turnstileのテスト用キー残存・(WordPressの場合)セキュリティプラグインや.htaccess・バックアップ取得状況がダミー値のまま/未設定/未確認のまま残っていないかを、プロジェクトの実際のファイル構成を調べて確認する。「公開前チェック」「リリース前チェック」「本番公開できるか確認して」「サイト公開の準備」「go-liveチェック」「OGP確認」「GTM設定確認」「ダミーIDのままになっていないか」「WordPressのセキュリティ確認」「APIキーが漏れていないか」「バックアップ取ったか確認して」「reCAPTCHAの設定確認」「フォームの動作確認」のような依頼で必ず使う。フレームワークを問わず(Astro/11ty/Next.js/Hugo/Jekyll/WordPress/プレーンなHTML等)使えるので、スタックが分からない/初めて見るプロジェクトでも積極的に使うこと。
 ---
 
 # 公開前チェック(Prelaunch Check)
 
 Web制作の現場では、開発中に使っていたダミー値(`https://example.com`、`Site Name`、`GTM-XXXXXX`など)がそのまま本番公開されてしまう事故が多い。このスキルは、そうした「ダミー値の消し忘れ」と「設定自体の抜け漏れ」を、プロジェクトごとに実際のファイルを調べて機械的に検出するための手順を示す。
 
-固定のスクリプトを1本実行するのではなく、**プロジェクトごとに構成が違う前提で、都度grep/検索して実態を確認する**のがこのスキルの核。以下の項目を順番にチェックする(5〜7は該当する場合のみ)。
+固定のスクリプトを1本実行するのではなく、**プロジェクトごとに構成が違う前提で、都度grep/検索して実態を確認する**のがこのスキルの核。以下の項目を順番にチェックする(6〜8は該当する場合のみ)。
 
 ## 進め方の基本方針
 
@@ -60,9 +60,15 @@ Web制作の現場では、開発中に使っていたダミー値(`https://exam
 
 **確認すること**: サーバーサイド専用のシークレット(DB接続情報、決済APIの秘密鍵など)が、クライアントに配信されるファイルや公開ディレクトリに紛れ込んでいないか。
 
-**探し方・注意点**: 詳細は[references/secrets-exposure.md](references/secrets-exposure.md)を参照。**「公開されて問題ないキー」(GA測定ID、GTM IDなど)と「公開してはいけないキー」を混同しないことが重要**なので、必ず先にこのreferenceを読んでから判断すること。見つけたキーの値そのものはレポートに書かない(場所と種類だけを報告する)。
+**探し方・注意点**: 詳細は[references/secrets-exposure.md](references/secrets-exposure.md)を参照。**「公開されて問題ないキー」(GA測定ID、GTM IDなど)、「公開してはいけないキー」(DB接続情報、決済APIのsecret keyなど)、「権限次第でグレーになるキー」(microCMSなどヘッドレスCMSのAPIキー)を混同しないことが重要**なので、必ず先にこのreferenceを読んでから判断すること。見つけたキーの値そのものはレポートに書かない(場所と種類だけを報告する)。
 
-## 6. WordPress固有チェック(WordPressの場合のみ)
+## 6. お問い合わせフォーム / reCAPTCHA・Turnstile
+
+**確認すること**: フォームの送信先設定が仮のままでないか、スパム対策(reCAPTCHA/Cloudflare Turnstile)がテスト用キーのまま本番で無効化された状態になっていないか。
+
+**探し方**: 詳細は[references/forms-and-captcha.md](references/forms-and-captcha.md)を参照。まずどのフォームサービスを使っているか判定する(WordPressなら`Contact Form 7`、静的サイトなら`formrun`・`HyperForm`が多いが、他のサービスの可能性もある)。reCAPTCHA/Turnstileが導入されている場合は、Google/Cloudflareが公式に配布している「常に成功するテスト用キー」がそのまま使われていないかを重点的に確認する(見た目上は動いているように見えるため見落としやすい)。導入されていないこと自体は要件次第でNGとは限らないので中立に報告する。
+
+## 7. WordPress固有チェック(WordPressの場合のみ)
 
 `wp-config.php`や`wp-content/`の存在からWordPressだと判断した場合のみ、以下を確認する。それ以外のスタックでは不要。
 
@@ -70,7 +76,7 @@ Web制作の現場では、開発中に使っていたダミー値(`https://exam
 
 **探し方**: 詳細は[references/wordpress-security.md](references/wordpress-security.md)を参照。`wp-cli`が使える環境なら`wp plugin list`や`wp option get`で確実に確認できるものが多いので、使えるか先に確認するとよい。使えない場合はファイル・ディレクトリの静的な確認に切り替え、それでも判断できないものは「管理画面で確認してください」と正直に報告する。
 
-## 7. バックアップ
+## 8. バックアップ
 
 **確認すること**: 公開前の状態に戻せるバックアップ(DB・ファイル、またはコードの場合はデプロイ前のコミット/タグ)が用意されているか。
 
@@ -82,7 +88,7 @@ Web制作の現場では、開発中に使っていたダミー値(`https://exam
 
 ## レポート形式
 
-チェックが終わったら、必ず次の形式で報告する(見つからなかった項目は「未確認」として理由を添える。全部を無理に自動化しようとせず、コードから追えないものは正直にそう書く)。WordPress以外のプロジェクトでは項目6は「該当なし(WordPressではない)」の1行で済ませてよい。
+チェックが終わったら、必ず次の形式で報告する(見つからなかった項目は「未確認」として理由を添える。全部を無理に自動化しようとせず、コードから追えないものは正直にそう書く)。WordPress以外のプロジェクトでは項目7は「該当なし(WordPressではない)」の1行で済ませてよい。
 
 ```
 ## 公開前チェック結果
@@ -92,6 +98,7 @@ Web制作の現場では、開発中に使っていたダミー値(`https://exam
 - [✅|❌|⚠️未確認] favicon/apple-touch-icon: <詳細と根拠>
 - [✅|❌|⚠️未確認] sitemap.xml/robots.txt: <詳細と根拠>
 - [✅|❌|⚠️未確認] APIキー・機密情報の露出: <詳細と根拠(値そのものは書かない)>
+- [✅|❌|⚠️未確認|中立] お問い合わせフォーム/reCAPTCHA・Turnstile: <詳細と根拠>
 - [✅|❌|⚠️未確認|該当なし] WordPress固有(セキュリティプラグイン/.htaccess等): <詳細と根拠>
 - [⚠️要確認] バックアップ: <手段の有無と、実行有無を確認してほしい旨>
 
@@ -107,5 +114,6 @@ Web制作の現場では、開発中に使っていたダミー値(`https://exam
 - [references/dummy-patterns.md](references/dummy-patterns.md) — OGP・ドメイン・GA/GTMの典型的なダミー値/プレースホルダー一覧
 - [references/sitemap-by-stack.md](references/sitemap-by-stack.md) — スタック別のsitemap.xml導入方法
 - [references/secrets-exposure.md](references/secrets-exposure.md) — APIキー・機密情報の露出チェックの詳細と、公開してよいキー/悪いキーの見分け方
+- [references/forms-and-captcha.md](references/forms-and-captcha.md) — Contact Form 7/formrun/HyperFormの確認ポイントと、reCAPTCHA/Turnstileの既知テスト用キー一覧
 - [references/wordpress-security.md](references/wordpress-security.md) — WordPress固有のセキュリティプラグイン・.htaccess・バックアップチェックの詳細
 - [assets/check-prelaunch.template.mjs](assets/check-prelaunch.template.mjs) — Astro(site.jsパターン)向け自動チェックスクリプトのテンプレート

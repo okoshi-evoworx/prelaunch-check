@@ -10,9 +10,10 @@ Claude Code用のユーザーレベルSkill。Web制作プロジェクトの公�
 2. **Google Analytics / Google Tag Manager** — 計測タグのIDがダミー値・サンプルIDのまま残っていないか
 3. **favicon / apple-touch-icon** — 用意されているか、実際にファイルが存在するか(リンクだけあってファイル実体がないケースも検出)
 4. **sitemap.xml / robots.txt** — 生成される仕組みがあるか。無ければスタック(Astro/11ty/Next.js/Hugo/Jekyll/WordPress等)に応じた導入方法を提案
-5. **APIキー・機密情報の露出** — サーバー専用のシークレットがクライアント配信物や公開ディレクトリに紛れ込んでいないか
-6. **WordPress固有チェック**(WordPressの場合のみ) — セキュリティプラグイン導入・自動アップデート設定・.htaccessの基本的なセキュリティ強化
-7. **バックアップ** — 公開前の状態に戻せる手段(デプロイ前のコミット/タグ、バックアッププラグイン等)が用意されているか
+5. **APIキー・機密情報の露出** — サーバー専用のシークレットがクライアント配信物や公開ディレクトリに紛れ込んでいないか(microCMSなどヘッドレスCMSのキーは権限次第のグレーゾーンとして個別に判断)
+6. **お問い合わせフォーム / reCAPTCHA・Turnstile** — Contact Form 7・formrun・HyperForm等の送信先設定、reCAPTCHA/Cloudflare Turnstileが本番用キーになっているか(Google/Cloudflare公式のテスト用キーが残っていないか)
+7. **WordPress固有チェック**(WordPressの場合のみ) — セキュリティプラグイン導入・自動アップデート設定・.htaccessの基本的なセキュリティ強化
+8. **バックアップ** — 公開前の状態に戻せる手段(デプロイ前のコミット/タグ、バックアッププラグイン等)が用意されているか
 
 固定のスクリプトを1本実行するのではなく、**プロジェクトごとに構成が違う前提で、都度grep・ファイル探索して実態を確認する**のが設計の核です。そのため特定のフレームワークやディレクトリ構成に依存せず、Astro・11ty・Next.js・Hugo・Jekyll・WordPress・プレーンなHTMLなど、どんなプロジェクトでも使えます。
 
@@ -65,6 +66,7 @@ prelaunch-check/
 │   ├── dummy-patterns.md             # OGP/ドメイン/GA・GTMの典型的ダミー値一覧
 │   ├── sitemap-by-stack.md           # スタック別のsitemap.xml導入方法
 │   ├── secrets-exposure.md           # APIキー・機密情報の露出チェックの詳細
+│   ├── forms-and-captcha.md          # フォームサービス別の確認ポイントとreCAPTCHA/Turnstileのテスト用キー一覧
 │   └── wordpress-security.md         # WordPress固有(セキュリティプラグイン/.htaccess/バックアップ)の詳細
 └── assets/
     └── check-prelaunch.template.mjs  # site.js形式のAstroプロジェクト向け自動チェックスクリプトの雛形

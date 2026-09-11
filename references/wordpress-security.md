@@ -8,7 +8,7 @@ WordPressプロジェクトだと判断した場合(`wp-config.php`, `wp-content
 
 **探し方**:
 - `wp-cli`が使えるなら `wp plugin list --status=active` が最も確実(実際に有効化されているものだけが分かる)。
-- `wp-cli`が無い場合は `wp-content/plugins/` 配下のディレクトリ名を確認する。代表的なもの: `wordfence`, `siteguard`, `all-in-one-wp-security-and-firewall`, `better-wp-security`(iThemes/SolidSecurity), `sucuri-scanner`, `wp-security-audit-log`。ただしディレクトリが存在するだけでは有効化されているか分からない点に注意し、可能なら`wp-content/plugins/<name>/`が最近更新されているか、`.maintenance`ファイルの有無なども補助的に見る。有効化の最終確認は「管理画面で確認してください」と添えてよい。
+- `wp-cli`が無い場合は `wp-content/plugins/` 配下のディレクトリ名を確認する。**自社でよく採用するもの(優先的に確認)**: `xo-security`(XO Security)、`cloudsecure-wp-security`(CloudSecure WP Security)、`block-bad-queries`(BBQ Firewall / BBQ: Block Bad Queries)。その他一般的なもの: `wordfence`, `siteguard`(SiteGuard WP Plugin), `all-in-one-wp-security-and-firewall`, `better-wp-security`(iThemes/SolidSecurity), `sucuri-scanner`, `wp-security-audit-log`。ただしディレクトリが存在するだけでは有効化されているか分からない点に注意し、可能なら`wp-content/plugins/<name>/`が最近更新されているか、`.maintenance`ファイルの有無なども補助的に見る。有効化の最終確認は「管理画面で確認してください」と添えてよい。
 - 見つからない場合は、最低限プラグインなしでも設定できる項目(ログイン試行回数制限、管理画面URLの変更、REST API/XML-RPCの制限など)がされているかも合わせて確認する。
 
 ## 自動アップデート設定
