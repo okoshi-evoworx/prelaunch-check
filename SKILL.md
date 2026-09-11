@@ -1,14 +1,14 @@
 ---
 name: prelaunch-check
 description: >-
-  Web制作プロジェクトの公開前チェック。OGP設定・Google Analytics/Google Tag ManagerのID・favicon/apple-touch-icon・sitemap.xml/robots.txtがダミー値のまま/未設定のまま残っていないかを、プロジェクトの実際のファイル構成を調べて確認する。「公開前チェック」「リリース前チェック」「本番公開できるか確認して」「サイト公開の準備」「go-liveチェック」「OGP確認」「GTM設定確認」「ダミーIDのままになっていないか」のような依頼で必ず使う。フレームワークを問わず(Astro/11ty/Next.js/Hugo/Jekyll/WordPress/プレーンなHTML等)使えるので、スタックが分からない/初めて見るプロジェクトでも積極的に使うこと。
+  Web制作プロジェクトの公開前チェック。OGP設定・Google Analytics/Google Tag ManagerのID・favicon/apple-touch-icon・sitemap.xml/robots.txt・APIキーなど機密情報の露出・(WordPressの場合)セキュリティプラグインや.htaccess・バックアップ取得状況がダミー値のまま/未設定/未確認のまま残っていないかを、プロジェクトの実際のファイル構成を調べて確認する。「公開前チェック」「リリース前チェック」「本番公開できるか確認して」「サイト公開の準備」「go-liveチェック」「OGP確認」「GTM設定確認」「ダミーIDのままになっていないか」「WordPressのセキュリティ確認」「APIキーが漏れていないか」「バックアップ取ったか確認して」のような依頼で必ず使う。フレームワークを問わず(Astro/11ty/Next.js/Hugo/Jekyll/WordPress/プレーンなHTML等)使えるので、スタックが分からない/初めて見るプロジェクトでも積極的に使うこと。
 ---
 
 # 公開前チェック(Prelaunch Check)
 
 Web制作の現場では、開発中に使っていたダミー値(`https://example.com`、`Site Name`、`GTM-XXXXXX`など)がそのまま本番公開されてしまう事故が多い。このスキルは、そうした「ダミー値の消し忘れ」と「設定自体の抜け漏れ」を、プロジェクトごとに実際のファイルを調べて機械的に検出するための手順を示す。
 
-固定のスクリプトを1本実行するのではなく、**プロジェクトごとに構成が違う前提で、都度grep/検索して実態を確認する**のがこのスキルの核。以下の4項目を順番にチェックする。
+固定のスクリプトを1本実行するのではなく、**プロジェクトごとに構成が違う前提で、都度grep/検索して実態を確認する**のがこのスキルの核。以下の項目を順番にチェックする(5〜7は該当する場合のみ)。
 
 ## 進め方の基本方針
 
@@ -56,9 +56,33 @@ Web制作の現場では、開発中に使っていたダミー値(`https://exam
 - sitemap生成の仕組みが**存在しない**場合は、そのプロジェクトのスタックに応じた導入方法を[references/sitemap-by-stack.md](references/sitemap-by-stack.md)から選んで提案する。**Astroプロジェクトで、かつsite共通データファイル(`site.js`/`site.config.*`等)+ `public/`中心の画像運用という構成が確認できた場合は**、[assets/check-prelaunch.template.mjs](assets/check-prelaunch.template.mjs)をベースにした自動チェックスクリプト一式(このスキル自体の手動チェックを、そのプロジェクトに恒常的なnpm scriptとして設置するもの)を設置してよいか提案する。他のスタックでは無理にスクリプト化せず、reference記載の該当ツール導入を提案するだけでよい。
 - robots.txtがあれば`Sitemap:`行でsitemap.xmlを正しく参照しているか確認する。なければ最低限`User-agent: * / Allow: /`だけでも用意されているか確認する。
 
+## 5. APIキー・機密情報の露出(全スタック共通)
+
+**確認すること**: サーバーサイド専用のシークレット(DB接続情報、決済APIの秘密鍵など)が、クライアントに配信されるファイルや公開ディレクトリに紛れ込んでいないか。
+
+**探し方・注意点**: 詳細は[references/secrets-exposure.md](references/secrets-exposure.md)を参照。**「公開されて問題ないキー」(GA測定ID、GTM IDなど)と「公開してはいけないキー」を混同しないことが重要**なので、必ず先にこのreferenceを読んでから判断すること。見つけたキーの値そのものはレポートに書かない(場所と種類だけを報告する)。
+
+## 6. WordPress固有チェック(WordPressの場合のみ)
+
+`wp-config.php`や`wp-content/`の存在からWordPressだと判断した場合のみ、以下を確認する。それ以外のスタックでは不要。
+
+**確認すること**: セキュリティプラグインの導入、自動アップデート設定、検索エンジンのインデックス許可設定、.htaccess(Apache環境)の基本的なセキュリティ強化設定。
+
+**探し方**: 詳細は[references/wordpress-security.md](references/wordpress-security.md)を参照。`wp-cli`が使える環境なら`wp plugin list`や`wp option get`で確実に確認できるものが多いので、使えるか先に確認するとよい。使えない場合はファイル・ディレクトリの静的な確認に切り替え、それでも判断できないものは「管理画面で確認してください」と正直に報告する。
+
+## 7. バックアップ
+
+**確認すること**: 公開前の状態に戻せるバックアップ(DB・ファイル、またはコードの場合はデプロイ前のコミット/タグ)が用意されているか。
+
+**このスキルにおける位置づけ**: 「実際に直前のバックアップを取得したか」は操作ログや管理画面の状態を見ないと分からず、ファイル調査だけでは確認しきれないことが多い。無理に自動判定せず、以下のように**手段の有無**までを確認し、実行済みかどうかは必ず人に確認を促す。
+
+- コードベース(静的サイト/Git管理下のプロジェクト): デプロイ対象のコミットに対して、直前の本番相当の状態を指すコミット/タグが存在するか(`git log`, `git tag`で確認)。
+- WordPress: バックアッププラグイン(`UpdraftPlus`, `BackWPup`, `All-in-One WP Migration`等)が導入されているか、`wp-cli`の`wp db export`が使える環境か。詳細は[references/wordpress-security.md](references/wordpress-security.md)。
+- 上記いずれについても、「仕組みは確認できたが、実際に今回のリリース前に実行したかはコードから分からないため、実行したか確認してください」と必ず一言添えてレポートする。
+
 ## レポート形式
 
-チェックが終わったら、必ず次の形式で報告する(見つからなかった項目は「未確認」として理由を添える。全部を無理に自動化しようとせず、コードから追えないものは正直にそう書く)。
+チェックが終わったら、必ず次の形式で報告する(見つからなかった項目は「未確認」として理由を添える。全部を無理に自動化しようとせず、コードから追えないものは正直にそう書く)。WordPress以外のプロジェクトでは項目6は「該当なし(WordPressではない)」の1行で済ませてよい。
 
 ```
 ## 公開前チェック結果
@@ -67,16 +91,21 @@ Web制作の現場では、開発中に使っていたダミー値(`https://exam
 - [✅|❌|⚠️未確認] GA/GTM: <詳細と根拠>
 - [✅|❌|⚠️未確認] favicon/apple-touch-icon: <詳細と根拠>
 - [✅|❌|⚠️未確認] sitemap.xml/robots.txt: <詳細と根拠>
+- [✅|❌|⚠️未確認] APIキー・機密情報の露出: <詳細と根拠(値そのものは書かない)>
+- [✅|❌|⚠️未確認|該当なし] WordPress固有(セキュリティプラグイン/.htaccess等): <詳細と根拠>
+- [⚠️要確認] バックアップ: <手段の有無と、実行有無を確認してほしい旨>
 
 ### 対応が必要な項目
 <❌の項目について、具体的にどのファイルの何を直せばよいか>
 
 ### その他気づいた点(あれば)
-<4項目のどれにも厳密には当てはまらないが、公開前に直した方がよい問題(テンプレートの組み立てロジックのバグ、ビルド設定の不備など)があればここに書く>
+<各項目のどれにも厳密には当てはまらないが、公開前に直した方がよい問題(テンプレートの組み立てロジックのバグ、ビルド設定の不備など)があればここに書く>
 ```
 
 ## 参考
 
 - [references/dummy-patterns.md](references/dummy-patterns.md) — OGP・ドメイン・GA/GTMの典型的なダミー値/プレースホルダー一覧
 - [references/sitemap-by-stack.md](references/sitemap-by-stack.md) — スタック別のsitemap.xml導入方法
+- [references/secrets-exposure.md](references/secrets-exposure.md) — APIキー・機密情報の露出チェックの詳細と、公開してよいキー/悪いキーの見分け方
+- [references/wordpress-security.md](references/wordpress-security.md) — WordPress固有のセキュリティプラグイン・.htaccess・バックアップチェックの詳細
 - [assets/check-prelaunch.template.mjs](assets/check-prelaunch.template.mjs) — Astro(site.jsパターン)向け自動チェックスクリプトのテンプレート
